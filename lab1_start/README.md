@@ -10,8 +10,7 @@ This project ilustrates the three different types of depenency injection:
 ## Examples xml configuration
 
 #### Example 1
-Review in resources/applicationContext.xml the definition of bean with id mySportSubscription. Review testXmlContext JUnit tests to get the beans from the context and run methods:
-getDescription() and getPrice().
+Review the definition in resources/applicationContext.xml of the bean with the ID 'mySportSubscription.' Review the testXmlContext JUnit tests to retrieve the beans from the context and execute the methods: getDescription() and getPrice().
 ```xml
 <bean id="mySportSubscription"
     class="com.awbd.lab1.SportSubscription">
@@ -39,7 +38,7 @@ public void testXmlContext(){
 
 ```
 #### Example 2 
-Set up the file holding properties in resources/applicationContextDI.xml .
+Set up the file holding properties in resources/applicationContextDI.xml.
 
 
 ```xml
@@ -47,7 +46,7 @@ Set up the file holding properties in resources/applicationContextDI.xml .
 ```
 
 #### Example 3
-Review in resources/applicationContextDI.xml the definition of beans with ids myDiscountCalculator, myBooksSubscription and myMoviesSubscription. Class BooksSubscription uses constructor DI. Class MoviesSubscription uses setter DI. We must difine the bean that we will inject as DiscountCalculator, i.e myDiscountCalculator.
+Review the definitions of beans with IDs 'myDiscountCalculator,' 'myBooksSubscription,' and 'myMoviesSubscription' in resources/applicationContextDI.xml. The class 'BooksSubscription' uses constructor dependency injection, while the class 'MoviesSubscription' uses setter dependency injection. We must define the bean that we will inject as 'DiscountCalculator,' i.e., 'myDiscountCalculator.'
 
 
 ```xml
@@ -66,7 +65,7 @@ Review in resources/applicationContextDI.xml the definition of beans with ids my
 ```
 
 #### Example 4
-Run tests contructorDI and setterDI. Both use applicationContextDI.xml to configure the context.
+Run tests constructorDI and setterDI. Both use applicationContextDI.xml to configure the context.
 ```java
 @Test
 public void contructorDI(){
@@ -95,17 +94,17 @@ public class SportSubscription implements Subscription{
 ```
 
 #### Exercise 2
-Annotate percent property in DiscountCalculatorImpl
+Annotate the property percent in DiscountCalculatorImpl with @Value.
 ```java
 @Value("${discount.percent}")
 double percent;
 ```
 
 #### Exercise 3
-Add attribute discountCalculator in SportSubscription and annotate it with @Autowired.
-Add annotation @Autowired to setDiscoutCalculator method in MoviesSubsciption
+Add the attribute 'discountCalculator' in SportSubscription and annotate it with @Autowired.
+Add the annotation @Autowired to the setDiscountCalculator method in MoviesSubscription.
 
-Annotate @Autowired the constructor  BooksSubscription.
+Annotate the constructor of BooksSubscription with @Autowired.
 ```java
 @Autowired
 DiscountCalculator discountCalculator;
@@ -160,7 +159,7 @@ public class ContextLoadTest {
 ```
 
 #### Exercise 6
-Create a new implementation for DiscountCalculator interface. Rerun test.
+Create a new implementation for DiscountCalculator interface. Rerun all tests.
 ```java
 @Component
 public class FixDiscountCalculator implements DiscountCalculator{
@@ -172,7 +171,7 @@ public class FixDiscountCalculator implements DiscountCalculator{
 ```
 
 #### Exercise 7
-To fix the test add @Primary annotation in FixDiscountCalculator
+To fix the tests add @Primary annotation in FixDiscountCalculator.
 ```java
 @Component
 @Primary
@@ -185,7 +184,7 @@ public class FixDiscountCalculator implements DiscountCalculator{
 ```
 
 #### Exercise 8
-Add @Qualifier anntoation to setter method in MoviesSubscription. Use it also for the constructor in BooksSubscription.
+Add the @Qualifier annotation to the setter method in MoviesSubscription. Use it also for the constructor in BooksSubscription.
 ```java
 @Autowired
 @Qualifier("discountCalculatorImpl")
@@ -204,7 +203,7 @@ public BooksSubscription(@Qualifier("discountCalculatorImpl") DiscountCalculator
 
 
 #### Exercise 9
-Add a configuration class that we will use instead of xml file applicationContxtCS. Add in the same file the definition of another implementation for DiscountCalculator:
+Add a configuration class that we will use instead of the XML file applicationContextCS. Also, in the same file, define another implementation for DiscountCalculator.
 ```java
 class ExternalCalculator implements DiscountCalculator{
     public double calculate(int price) {
@@ -226,7 +225,7 @@ public class SubscriptionConfig {
 ```
 
 #### Exercise 10
-Change @Qualifier annotation for setter method in MoviesSubscription and run test:
+Change @Qualifier annotation for setter method in MoviesSubscription to inject externalCalculator and run tests:
 ```java
 @Autowired
 @Qualifier("externalCalculator")
