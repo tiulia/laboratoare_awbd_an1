@@ -1,10 +1,10 @@
 
-# Project 1  
+# Project 1
 
 This project ilustrates the three different types of depenency injection:
 
 - constructor DI
-- setter DI 
+- setter DI
 - property DI
 
 ## Examples xml configuration
@@ -37,7 +37,7 @@ public void testXmlContext(){
 }
 
 ```
-#### Example 2 
+#### Example 2
 Set up the file holding properties in resources/applicationContextDI.xml.
 
 
@@ -78,6 +78,10 @@ public void contructorDI(){
     context.close();
 }
 ```
+
+![App Screenshot](https://bafybeiggoagagos7j7pdm5zuyencbsf5kuwat5dmacyvfchqgazmdvylfi.ipfs.w3s.link/project1_architecture.png)
+
+
 
 ## Exercises Switch to Java Code configuration
 
@@ -249,6 +253,258 @@ public class ContextLoadConfigTest {
         System.out.println(myBooksSubscription.getPrice() + " " + myBooksSubscription.getDescription());
 
         context.close();
+    }
+}
+```
+
+### Singleton pattern
+
+```java
+public class LazyInitSingleton {
+
+    private static LazyInitSingleton instance;
+
+    private LazyInitSingleton(){}
+
+    public static LazyInitSingleton getInstance() {
+        if (instance == null) {
+            instance = new LazyInitSingleton();
+        }
+        return instance;
+    }
+}
+```
+
+Use singleton or DI: in Spring we create a bean for each Container. An application may have more than one Container.
+In Spring 'open for extension closed for modification' is respected, we can replace the implementation for bean without changing the code.
+
+
+#### Exercise 12
+Create a new interface Features with only one method addFeature
+
+```java
+public interface Features {
+    public void addFeature(String option);
+}
+```
+
+#### Exercise 13
+Create a class FeaturesImpl to store subscription features as a list of Strings.
+Create a bean of type FeaturesImpl in SubscriptionConfig
+
+```java
+package com.awbd.lab1cs;
+class FeaturesImpl implements Features{
+    private List<String> features;
+    public FeaturesImpl(){
+        features = new ArrayList<>();
+    }
+    public void addFeature(String feature) {
+        features.add(feature);
+    }
+    @Override
+    public String toString() {
+        return "FeaturesImpl{" +
+                "features=" + features +
+                '}';
+    }
+}
+```
+
+```java
+public class SubscriptionConfig {
+    @Bean
+    public Features featureBean() {
+        return new FeaturesImpl();
+    }
+}
+```
+
+#### Exercise 14
+In MoviesSubscription and SportSubscription add Feature dependencies.
+
+```java
+Features features;
+
+@Autowired
+public void setFeatures(Features features){
+    this.features = features;
+}
+```
+
+```java
+@Autowired
+Features features;
+```
+
+#### Exercise 15
+In MovieSubscription and SportSubscription add a method to add features.
+
+```java
+public void addFeature(String option){
+    features.addFeature(option);
+}
+```
+#### Exercise 16
+Create and run the test testFeatures.
+
+```java
+public class BeanScopeTest {
+
+    @Test
+    public void testFeatures(){
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(SubscriptionConfig.class);
+
+        MoviesSubscription myMoviesSubscription = context.getBean("myMoviesSubscription", MoviesSubscription.class);
+        myMoviesSubscription.addFeature("automoated recurring billing");
+
+        SportSubscription mySportSubscription = context.getBean("mySportSubscription", SportSubscription.class);
+        mySportSubscription.addFeature("automoated invoicing");
+
+        System.out.println(myMoviesSubscription.features);
+        System.out.println(mySportSubscription.features);
+
+        context.close();
+    }
+}
+```
+
+#### Exercise 17
+Change the default scope of the bean Features to 'prototype' and run again testFeatures.
+
+```java
+@Bean
+@Scope("prototype")
+public Features featureBean(){ return new FeaturesImpl();}
+```
+
+#### Exercise 18
+Configure a bean Invoice, use 'prototype' scope.
+```java
+class Invoice{
+    String details;
+
+    public Invoice(String details){
+        this.details = details;
+    }
+
+    @Override
+    public String toString() {
+        return "Invoice{" +
+                "details='" + details + '\'' +
+                '}';
+    }
+}
+```
+
+```java
+@Configuration
+@ComponentScan("com.awbd.lab1cs")
+@PropertySource("classpath:application.properties")
+public class SubscriptionConfig {
+    //...
+    @Bean
+    @Scope("prototype")
+    public Invoice invoice() {return new Invoice(String.valueOf(LocalTime.now()));}
+
+}
+```
+
+#### Exercise 19
+In BooksSubscription class autowire a bean of type Invoice and add a method to get the Invoice.
+
+```java
+@Autowired
+Invoice invoice;
+    
+public Invoice getInvoice(){ 
+    return this.invoice;
+}
+```
+
+#### Exercise 20
+Add a test that will call getInvoice twice.
+
+```java
+@Test
+public void testInvoice(){
+    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SubscriptionConfig.class);
+
+    BooksSubscription myBooksSubscription1 = context.getBean(BooksSubscription.class);
+    Invoice invoice1 = myBooksSubscription1.getInvoice();
+
+    BooksSubscription myBooksSubscription2 = context.getBean(BooksSubscription.class);
+    Invoice invoice2 = myBooksSubscription2.getInvoice();
+
+    System.out.println(invoice1);
+    System.out.println(invoice2);
+    
+    context.close();
+}
+```
+
+#### Exercise 21
+If we need to inject prototype beans into singleton beans we may use ApplicationContextAware.
+Run the test again.
+
+```java
+@Component("myBooksSubscription")
+public class BooksSubscription implements Subscription, ApplicationContextAware {
+
+    private static ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    //@Autowired
+    //Invoice invoice;
+    public Invoice getInvoice() {
+        return applicationContext.getBean(Invoice.class);
+    }
+    //...
+}
+```
+
+### Beans lifecycle
+
+#### Exerics 22
+Add the maven dependecy for @PreDestroy and @PostInit annotations.
+
+```xml
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+</dependency>
+```
+#### Exerics 22
+Add @PreDestroy method in bean SportSubscription
+
+```java
+@PreDestroy
+public void customDestroy()
+{
+    System.out.println("Bean SportSubscription customDestroy() invoked...");
+}
+```
+
+#### Exercise 23
+Make FeaturesImpl to implement InitializingBean interface. Add a @PostConstruct method. Run test and analyze the order of custom construct and destroy methods.
+
+```java
+class FeaturesImpl implements Features, InitializingBean {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("Bean Features afterPropertiesSet() invoked... ");
+    }
+
+    @PostConstruct
+    public void customInit() {
+        System.out.println("Bean Features customInit() invoked...");
     }
 }
 ```
