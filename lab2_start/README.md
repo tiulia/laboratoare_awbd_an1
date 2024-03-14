@@ -7,7 +7,6 @@ This project contains examples of using JPA (Java Persistence API):
 - creating entities and relationships.
 - managing entities' lifecycle.
 - running tests, working with @DataJpaTest.
-- working with Docker images and containers.
 
 
 ### Project configuration
