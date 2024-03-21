@@ -60,7 +60,7 @@ alter table product modify column currency VARCHAR(5);
 alter table product modify column currency ENUM('USD', 'EUR', 'GBP');
 ```
 
-### Repositries
+### Repositories
 A repository is a high-level interface that provides a set of methods for performing common CRUD operations.
 Repositories simplify transaction management. EntityManager requires manual transaction control.
 EntityManager provides fine-grained control over persistent entities' lifecycle by managing detached and transient entities,
@@ -505,7 +505,7 @@ Run the maven configuration clean-install.
 Run a container based on the docker image lab3 with the profile sqldocker.
 
 ```
-docker run -e "SPRING_PROFILES_ACTIVE=sqldocker" --name lab3_sqldocker -p 8080:8080 lab3
+docker run -e "SPRING_PROFILES_ACTIVE=sqldocker" --name lab3_sqldocker --network boot-mysql -p 8080:8080 lab3
 ```
 
 #### Exerise 20
