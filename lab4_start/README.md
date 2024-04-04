@@ -260,7 +260,7 @@ public class ParticipantDTO {
 A bean implementing ParticipantMapper will be automatically created.
 
 ```java
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ParticipantMapper {
     ParticipantDTO toDto (Participant participant);
     Participant toParticipant (ParticipantDTO participantDTO);
@@ -513,6 +513,7 @@ Inject the list of products into the Model using the argument of
 @RequestMapping("/product")
 public class ProductController {
     ProductService productService;
+    CategoryService categoryService;
     
     public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
