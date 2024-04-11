@@ -196,7 +196,7 @@ CommandLineRunner is a Spring Boot interface with a single method (run method).
 Spring Boot will automatically call the run method of all beans implementing the interface CommandLineRunner after the application context has been loaded.
 
 #### Exercise 6
-Create package com.awbd.lab5.bootstrap and class com.awbd.lab5.bootstrap.DataLoader.
+Create package com.awbd.lab6.bootstrap and class com.awbd.lab6.bootstrap.DataLoader.
 If there are no users found by UserRepository, the CommandLineRunner will create two users and two roles.
 The CommandLineRunner will run only when mysql profile is active and will use the PasswordEncoder defined in the SecurityJpaConfig class.
 
@@ -407,10 +407,14 @@ Configure the SecurityFilterChain to use custom login and access_denied endpoint
 ```
 
 #### Exercise 16
-Add Tymeleaf sec:authorize on roduct/form url.
+Add Tymeleaf sec:authorize on product/form url in templates/main.html.
 
 ```
-sec:authorize="hasRole('ADMIN')"
+<li sec:authorize="hasRole('ADMIN')" class="nav-item">
+  <a class="nav-link btn-primary" th:href="@{'/product/form'}">
+    <i class="fas fa-plus-circle"></i> Sell
+  </a>
+</li>
 ```
 
 
