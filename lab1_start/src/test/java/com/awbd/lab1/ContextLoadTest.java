@@ -1,6 +1,6 @@
 package com.awbd.lab1;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class ContextLoadTest {
@@ -15,13 +15,16 @@ public class ContextLoadTest {
         // retrieve bean from spring container
         Subscription mySportSubscription = context.getBean("mySportSubscription", Subscription.class);
 
+        // call methods on the bean
+        System.out.println(mySportSubscription.getPrice() + " " + mySportSubscription.getDescription());
 
         // close the context
         context.close();
     }
 
+
     @Test
-    public void contructorDI(){
+    public void constructorDI(){
         ClassPathXmlApplicationContext context =
                 new ClassPathXmlApplicationContext("applicationContextDI.xml");
 

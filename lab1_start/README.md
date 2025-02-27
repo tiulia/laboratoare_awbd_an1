@@ -1,7 +1,7 @@
 
 # Project 1
 
-This project ilustrates the three different types of depenency injection:
+This project illustrates three different types of dependency injection.
 
 - constructor DI
 - setter DI
@@ -11,9 +11,11 @@ This project ilustrates the three different types of depenency injection:
 
 #### Example 1
 Review the definition in resources/applicationContext.xml of the bean with the ID 'mySportSubscription.' Review the testXmlContext JUnit tests to retrieve the beans from the context and execute the methods: getDescription() and getPrice().
+
 ```xml
+
 <bean id="mySportSubscription"
-    class="com.awbd.lab1.SportSubscription">
+      class="com.awbd.lab1c.SportSubscription">
 </bean>
 
 ```
@@ -38,7 +40,7 @@ public void testXmlContext(){
 
 ```
 #### Example 2
-Set up the file holding properties in resources/applicationContextDI.xml.
+Set up the file for storing properties in resources/applicationContextDI.xml.
 
 
 ```xml
@@ -48,19 +50,19 @@ Set up the file holding properties in resources/applicationContextDI.xml.
 #### Example 3
 Review the definitions of beans with IDs 'myDiscountCalculator,' 'myBooksSubscription,' and 'myMoviesSubscription' in resources/applicationContextDI.xml. The class 'BooksSubscription' uses constructor dependency injection, while the class 'MoviesSubscription' uses setter dependency injection. We must define the bean that we will inject as 'DiscountCalculator,' i.e., 'myDiscountCalculator.'
 
-
 ```xml
-<bean id="myDiscountCalculator" class="com.awbd.lab1.DiscountCalculatorImpl">
-    <property name="percent"  value="${discount.percent}"/>
+
+<bean id="myDiscountCalculator" class="com.awbd.lab1c.DiscountCalculatorImpl">
+    <property name="percent" value="${discount.percent}"/>
 </bean>
 
-<bean id="myBooksSubscription" class="com.awbd.lab1.BooksSubscription">
-    <constructor-arg name="discountCalculator" ref="myDiscountCalculator" />
+<bean id="myBooksSubscription" class="com.awbd.lab1c.BooksSubscription">
+<constructor-arg name="discountCalculator" ref="myDiscountCalculator"/>
 </bean>
 
 <bean id="myMoviesSubscription"
-    class="com.awbd.lab1.MoviesSubscription">
-    <property name="discountCalculator" ref="myDiscountCalculator"/>
+      class="com.awbd.lab1c.MoviesSubscription">
+<property name="discountCalculator" ref="myDiscountCalculator"/>
 </bean>
 ```
 
@@ -68,7 +70,7 @@ Review the definitions of beans with IDs 'myDiscountCalculator,' 'myBooksSubscri
 Run tests constructorDI and setterDI. Both use applicationContextDI.xml to configure the context.
 ```java
 @Test
-public void contructorDI(){
+public void constructorDI(){
     ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContextDI.xml");
 
     Subscription theSubscription = context.getBean("myBooksSubscription", Subscription.class);
@@ -87,7 +89,7 @@ public void contructorDI(){
 
 #### Exercise 1
 
-Create a new package com.awbd.lab1cs and copy all classes from com.awbd.lab1cs. Annotate all classes (BooksSubscription, MoviesSubscription, SportSubscription) with @Component.
+Create a new package com.awbd.lab1c and copy all classes from com.awbd.lab1cs. Annotate all classes (BooksSubscription, MoviesSubscription, SportSubscription) with @Component.
 
 ```java
 @Component("mySportSubscription")
@@ -142,18 +144,20 @@ public class DiscountCalculatorImpl implements DiscountCalculator {
 ```
 
 #### Exercise 5
-Add test class com.awbd.lab1cs.ContextLoadTest. Add methods to test all types of DI.
+Add test class com.awbd.lab1c.ContextLoadTest. Add methods to test all types of DI.
+
 ```java
-import lab1cs.Subscription;
-import org.junit.Test;
+package com.awbd.lab1c;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class ContextLoadTest {
 
     @Test
-    public void propertyDITest(){
+    public void propertyDITest() {
         ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("applicationContextCS.xml");
+                new ClassPathXmlApplicationContext("applicationContextC.xml");
         Subscription mySportSubscription = context.getBean("mySportSubscription", Subscription.class);
         System.out.println(mySportSubscription.getPrice() + " "
                 + mySportSubscription.getDescription());
@@ -207,7 +211,7 @@ public BooksSubscription(@Qualifier("discountCalculatorImpl") DiscountCalculator
 
 
 #### Exercise 9
-Add a configuration class that we will use instead of the XML file applicationContextCS. Also, in the same file, define another implementation for DiscountCalculator.
+Add a configuration class to replace the XML file applicationContextC. Also, in the same file, define another implementation for DiscountCalculator.
 ```java
 class ExternalCalculator implements DiscountCalculator{
     public double calculate(int price) {
@@ -216,7 +220,7 @@ class ExternalCalculator implements DiscountCalculator{
 }
 
 @Configuration
-@ComponentScan("com.awbd.lab1cs")
+@ComponentScan("com.awbd.lab1c")
 @PropertySource("classpath:application.properties")
 public class SubscriptionConfig {
 
@@ -244,7 +248,7 @@ Add a test class that will load the context using SubscriptionConfig.class. Add 
 public class ContextLoadConfigTest {
 
     @Test
-    public void contructorDI(){
+    public void constructorDI(){
         AnnotationConfigApplicationContext context =
                 new AnnotationConfigApplicationContext(SubscriptionConfig.class);
 
@@ -254,10 +258,36 @@ public class ContextLoadConfigTest {
 
         context.close();
     }
+
+    @Test
+    public void setterDI(){
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(SubscriptionConfig.class);
+
+        Subscription theSubscription = context.getBean("myMoviesSubscription", Subscription.class);
+
+        System.out.println(theSubscription.getPrice() + " " + theSubscription.getDescription());
+
+        context.close();
+    }
+
+    @Test
+    public void propertyDITest() {
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(SubscriptionConfig.class);
+        Subscription mySportSubscription = context.getBean("mySportSubscription", Subscription.class);
+        System.out.println(mySportSubscription.getPrice() + " "
+                + mySportSubscription.getDescription());
+        context.close();
+    }
 }
 ```
 
 ### Singleton pattern
+
+Use Singleton or Dependency Injection (DI)? 
+
+In Spring, a bean is created for each container, and an application may have multiple containers. Spring follows the 'Open for extension, closed for modification' principle, allowing the implementation of a bean to be replaced without modifying the existing code.
 
 ```java
 public class LazyInitSingleton {
@@ -275,16 +305,13 @@ public class LazyInitSingleton {
 }
 ```
 
-Use singleton or DI: in Spring we create a bean for each Container. An application may have more than one Container.
-In Spring 'open for extension closed for modification' is respected, we can replace the implementation for bean without changing the code.
-
 
 #### Exercise 12
 Create a new interface Features with only one method addFeature
 
 ```java
 public interface Features {
-    public void addFeature(String option);
+    void addFeature(String option);
 }
 ```
 
@@ -293,15 +320,19 @@ Create a class FeaturesImpl to store subscription features as a list of Strings.
 Create a bean of type FeaturesImpl in SubscriptionConfig
 
 ```java
-package com.awbd.lab1cs;
-class FeaturesImpl implements Features{
+package com.awbd.lab1c;
+
+class FeaturesImpl implements Features {
     private List<String> features;
-    public FeaturesImpl(){
+
+    public FeaturesImpl() {
         features = new ArrayList<>();
     }
+
     public void addFeature(String feature) {
         features.add(feature);
     }
+
     @Override
     public String toString() {
         return "FeaturesImpl{" +
@@ -357,10 +388,10 @@ public class BeanScopeTest {
                 new AnnotationConfigApplicationContext(SubscriptionConfig.class);
 
         MoviesSubscription myMoviesSubscription = context.getBean("myMoviesSubscription", MoviesSubscription.class);
-        myMoviesSubscription.addFeature("automoated recurring billing");
+        myMoviesSubscription.addFeature("recurring billing");
 
         SportSubscription mySportSubscription = context.getBean("mySportSubscription", SportSubscription.class);
-        mySportSubscription.addFeature("automoated invoicing");
+        mySportSubscription.addFeature("invoicing");
 
         System.out.println(myMoviesSubscription.features);
         System.out.println(mySportSubscription.features);
@@ -371,7 +402,8 @@ public class BeanScopeTest {
 ```
 
 #### Exercise 17
-Change the default scope of the bean Features to 'prototype' and run again testFeatures.
+Change the default 
+scope for the bean Features to 'prototype' and run again testFeatures.
 
 ```java
 @Bean
@@ -382,7 +414,7 @@ public Features featureBean(){ return new FeaturesImpl();}
 #### Exercise 18
 Configure a bean Invoice, use 'prototype' scope.
 ```java
-class Invoice{
+public class Invoice{
     String details;
 
     public Invoice(String details){
@@ -400,7 +432,7 @@ class Invoice{
 
 ```java
 @Configuration
-@ComponentScan("com.awbd.lab1cs")
+@ComponentScan("com.awbd.lab1c")
 @PropertySource("classpath:application.properties")
 public class SubscriptionConfig {
     //...
@@ -452,15 +484,14 @@ Run the test again.
 @Component("myBooksSubscription")
 public class BooksSubscription implements Subscription, ApplicationContextAware {
 
-    private static ApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    //@Autowired
-    //Invoice invoice;
+ 
     public Invoice getInvoice() {
         return applicationContext.getBean(Invoice.class);
     }
@@ -470,8 +501,8 @@ public class BooksSubscription implements Subscription, ApplicationContextAware 
 
 ### Beans lifecycle
 
-#### Exerics 22
-Add the maven dependecy for @PreDestroy and @PostInit annotations.
+#### Exercise 22
+Add the maven dependency for @PreDestroy and @PostInit annotations.
 
 ```xml
 <dependency>
@@ -480,8 +511,8 @@ Add the maven dependecy for @PreDestroy and @PostInit annotations.
     <version>1.3.2</version>
 </dependency>
 ```
-#### Exerics 22
-Add @PreDestroy method in bean SportSubscription
+#### Exercise 22
+Add @PreDestroy method bean SportSubscription
 
 ```java
 @PreDestroy
@@ -492,7 +523,7 @@ public void customDestroy()
 ```
 
 #### Exercise 23
-Make FeaturesImpl to implement InitializingBean interface. Add a @PostConstruct method. Run test and analyze the order of custom construct and destroy methods.
+Modify FeaturesImpl to implement InitializingBean interface. Add a @PostConstruct method. Run test and analyze the order of custom construct and destroy methods.
 
 ```java
 class FeaturesImpl implements Features, InitializingBean {
