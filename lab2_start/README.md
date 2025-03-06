@@ -1,9 +1,10 @@
 
 # Project 2
 
-This project contains examples of using JPA (Java Persistence API):
+In this project you find examples of using JPA (Java Persistence API):
 
-- working with an embedded in-memory database, H2, or with a relational MySQL database. 
+- working with an embedded
+  in-memory database, H2, or with a relational MySQL database.
 - creating entities and relationships.
 - managing entities' lifecycle.
 - running tests, working with @DataJpaTest.
@@ -19,12 +20,15 @@ https://start.spring.io/. We will add JPA annotation to the POJOs in the ERD sch
 
 ### Lombok annotations
 
-Lombok generates code that is commonly used in Java plain objects, like setters, getters, constructors, toString, equals or hashCode functions or logging options.
-It reduces boilerplate code and may be easily integrated in IDEs. With Lombok's plugins that support Lombok features, the generated code is automatically and immediately available. In IntelliJ you may find the Lombok plugin under Refactor menu.   
+Lombok generates code
+that is commonly used
+in Java plain objects, like setters, getters, constructors, toString, equals or hashCode functions or logging options.
+It reduces boilerplate code and may be easily integrated in IDEs. With Lombok plugins that support Lombok features, the generated code is automatically and immediately available.
+In IntelliJ, you may find the Lombok plugin under Refactor menu.
 
 #### Exercise 1
 Annotate all classes with Lombok.Data. @Data has the same effect as adding: @EqualsAndHashCode, @Getter, @Setter, @ToString. It also adds a constructor taking as arguments all @NonNull and final fields.
-Try "Refactor – Delombok" to see the equivalent Java Code.
+Try "Refactor – DeLombok" to see the equivalent Java Code.
 
 
 ```java
@@ -51,18 +55,17 @@ Enable H2 database console and configure the data source in the application.prop
 If H2 console is enabled, by setting the property spring.h2.console.enabled, we may access the url:
 http://localhost:8080/h2-console
 
-If property spring.datasource.url=jdbc:h2:mem:testdb is set, a database named testdb will be embedded in the application, notice also the properties to set up dirver and credentials.
+If property spring.datasource.url=jdbc:h2:mem:testdb is set, a database named testdb will be embedded in the application, notice also the properties to set up driver and credentials.
 
 
 
-```xml
+```
 spring.h2.console.enabled=true
 spring.datasource.url=jdbc:h2:mem:testdb
 spring.datasource.driverClassName=org.h2.Driver
 spring.datasource.username=sa
 spring.datasource.password=
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-
 ```
 
 ### Entities
@@ -73,14 +76,14 @@ spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 All entities must have a primary key. The filed annotated with @Id represents the primary key.
 For each primary key it is mandatory to define a generation strategy. There are four possible generation strategies:
 - GenerationType.**AUTO**		Spring chooses strategy.
-- GerationType.**IDENTITY** 	auto-incremented value.	
-- GerationType.**SEQUENCE**	uses a sequence if sequences are supported by the database (for example in Oracle databases). 
-- GerationType.**TABLE**		uses a table to store generated values.
+- GenerationType.**IDENTITY** 	auto-incremented value.
+- GenerationType.**SEQUENCE**	uses a sequence if sequences are supported by the database (for example in Oracle databases).
+- GenerationType.**TABLE**		uses a table to store generated values.
 
 For the last two generation strategies we must specify a generator (sequence or table):
 ```java 	
 @GeneratedValue(strategy = GenerationType.TABLE, generator = "table-generator")
-@TableGenerator(name = "table-generator", …)
+@TableGenerator(name = "table-generator")
 ```
 
 #### Exercise 3
@@ -105,7 +108,7 @@ public class Product {
 
 ### Relationships
 
-**@OneToOne** links two tables based on a FK column. In the child table a foreign key value references the primary key from a row in the parent table. 
+**@OneToOne** links two tables based on a FK column. In the child table a foreign key value references the primary key from a row in the parent table.
 Each row in the child table is linked to exactly one row in the parent table, in other words, each instance of the child @Entity is linked to exactly one instance of the parent @Entity.
 
 OneToOne relationships can be either unidirectional or bidirectional. 	
@@ -115,7 +118,8 @@ For instance, unidirectional relationship product – info means that the entity
 
 **@ManyToOne** is pairing a relationship of type @OneToMany.
 
-**@JoinColum** defines the foreign key. In Product we add:
+**@JoinColum** defines the foreign key.
+In Product, we add:
 
 ```java 	
 @ManyToOne
@@ -123,7 +127,7 @@ For instance, unidirectional relationship product – info means that the entity
 private Participant participant;
 ```
 
-The attribute **mappedBy** defines the corresponding field in the corresponding Many-To-One relationship. 
+The attribute **mappedBy** defines the corresponding field in the corresponding Many-To-One relationship.
 (@ManyToOne relationship) in Participant we have:
 
 ```java
@@ -142,7 +146,7 @@ private List<Product> products;
 private List<Product> products;
 ```
 
-The attribute mappedBy defines the corresponding field in the assciated Many-To-Many relationship. 			(@ManyToMany relationship) in @Entity Product we have:
+The attribute mappedBy defines the corresponding field in the associated Many-To-Many relationship. 			(@ManyToMany relationship) in @Entity Product we have:
 ```java
 @ManyToMany(mappedBy = "products")
 private List<Category> categories;
@@ -153,13 +157,13 @@ Add a @OnoToOne relationship between product and info entities.
 In the entity Product add filed _info_.
 
 ```java
-@OneToOne
+@OneToOne(mappedBy = "product")
 private Info info;
 ```
 
 In the entity Info add filed _product_.
 ```java
-@OneToOne(mappedBy = "info")
+@OneToOne
 private Product product;
 ```
 
@@ -202,32 +206,81 @@ In Category add:
 private List<Product> products;
 ```
 
-Run the application and check the creation of table product_catgory.
+Run the application and check the creation of table product_category.
+
+### Enumerations
+To allow more flexibility
+and more readability,
+string enums can replace
+number enums.
+We can also enrich the enum class
+with a descriptor attribute.
+String-based enums are more
+resilient to changes
+in the set of enum values over time.
+If new enum values are added or
+existing ones are modified,
+string-based enums do not require
+changes to the underlying database
+schema. In contrast, integer-based
+enums may require schema
+modifications if enum values are
+added or renumbered,
+leading to potential data migration
+issues.
+
+#### Exercise 7
+
+Change the definition of enum Currency.
+
+```java
+public enum Currency {
+USD("USD $"), EUR("EUR"), GBP("GBP");
+
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    Currency(String description) {
+        this.description = description;
+    }
+}
+```
+
+#### Exercise 8
+Add @Enumerated annotation for attributes of type Currency. Alter the type of column .
+
+```java
+@Enumerated(value = EnumType.STRING)
+private Currency currency;
+```
 
 ### Database initialization
 
-Hibernate options: For test purposes a file **data-h2.sql** may be added in resources. The sql statements added in this file will be used to initialize the database.
+Hibernate options: For test purposes a file **import.sql** may be added in resources. The sql statements added in this file will be used to initialize the database.
 
 **spring.jpa.hibernate.ddl-auto** specifies options for database initialization:
 - **none**: applications start without database initialization
 - **create**: tables are dropped and recreated at startup. A table is created for each class annotated with @Entity.
 - **create-drop**: tables are created at startup and dropped when application stops. This is the default value for embedded databases.
-- **validate**: application starts if all tables corresponding to entities exist and match entities specifications. 
+- **validate**: application starts if all tables corresponding to entities exist and match entities specifications.
 - **update**: Hibernates updates schema if tables differ from entities specifications.
 
-Spring Boot options: The files 
-- schema-[platform].sql containing DDL statements and 
-- data-[platform].sql containing LMD statements 
+Spring Boot options: The files
+- schema-[platform].sql containing DDL statements and
+- data-[platform].sql containing LMD statements
 
 may be used to create and initialize the database.
 The suffix platform is set by **spring.sql.init.platform**.
-**spring.sql.init.mode** controls initialization behaviour: always, never of embedded 
+**spring.sql.init.mode** controls initialization behaviour: always, never of embedded
 
 
-#### Exercise 7 
+#### Exercise 9
 Test **spring.jpa.hibernate.ddl-auto**=create | create-drop and **import.sql**
 
-Add the file data-h2.sql. We will add data in tables: category, participant, product, product_category.
+Add the file import.sql. We will add data in tables: category, participant, product, product_category.
 
 ```sql
 insert into category(id, name) values(1, 'paintings');
@@ -235,8 +288,9 @@ insert into participant(id, last_name, first_name) values(1, 'Adam', 'George');
 insert into product (id, name, code, reserve_price, restored, seller_id) values (1, 'The Card Players', 'PCEZ', 250, 0, 1);
 insert into product_category values(1,1);
 ```
+Rename or delete the file import.sql. In the next steps we will use data.sql and schema.sql
 
-#### Exercise 8
+#### Exercise 10
 Reorganize application's properties in the following files:
 - application.properties:
 ```
@@ -262,11 +316,17 @@ spring.datasource.password=awbd
 spring.jpa.hibernate.ddl-auto=create-drop
 ```
 
-We may use two profiles: h2 and mysql. 
-Add different run-configurations for profiles h2 and mysql.
-Run the application with profiles h2 and mysql. 
+We may use a docker container for mysql:
 
-#### Exercise 9
+```
+docker pull mysql
+docker run --name mysql_awbd -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=awbd -e MYSQL_PASSWORD=awbd -e MYSQL_USER=awbd -p 3306:3306  mysql
+```
+We may use two profiles: h2 and mysql.
+Add different run-configurations for profiles h2 and mysql.
+Run the application with profiles h2 and mysql.
+
+#### Exercise 11
 Test **spring.sql.init.mode** and **data-h2.sql, schema-h2.sql**.
 
 Add the file schema-h2.sql. Rename the file import.sql -> data-h2.sql and test spring.sql.init.mode options.
@@ -279,17 +339,16 @@ spring.sql.init.mode = embedded
 spring.sql.init.mode = always
 ```
 
-#### Exercise 10
-We may use different initialization files. 
-Rename file data-h2.sql -> data-h2.sql
-Rename file schema-h2.sql -> schema-h2.sql.
+#### Exercise 12
+We may use different initialization files.
+Add files data-h2.sql, data-mysql, schema-h2, schema-mysql.
 
-Add analogous files for mysql. Add drop statements for mysql schema.
+Add drop statements for mysql schema.
 
 ```
 DROP TABLE IF EXISTS product_category;
-DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS info;
+DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS participant;
 ```
@@ -297,11 +356,20 @@ DROP TABLE IF EXISTS participant;
 Add in corresponding .properties files spring.sql.init.platform option.
 
 ```
+spring.jpa.hibernate.ddl-auto=none
+spring.sql.init.mode = embedded
 spring.sql.init.platform=h2
 ```
 
 ```
-spring.sql.init.platform=mysql
+#spring.jpa.hibernate.ddl-auto=create-drop
+
+#spring.jpa.hibernate.ddl-auto=none
+#spring.sql.init.mode = always
+#spring.sql.init.platform=mysql
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.sql.init.mode = never
 ```
 
 To start the application without initializing the database use:
@@ -313,7 +381,12 @@ spring.sql.init.mode = never
 
 ## Factory design pattern
 
+The Factory Design Pattern is a creational design pattern that provides a way to create objects without specifying their concrete classes. Instead of calling a constructor directly, a factory method is used to instantiate objects. This pattern promotes loose coupling and flexibility in object creation.
+
 ![External Image](https://bafybeibhleief3zvjkdvsc63om2b4k4y6bin4x4ulhkos6gvic5kdfpnle.ipfs.w3s.link/factorypattern.png)
+
+In Spring and JPA (Java Persistence API), EntityManager is used to interact with the database. It provides methods for performing CRUD operations.
+
 
 The EntityManagerFactory is a component in Java Persistence API (JPA) responsible for creating EntityManager instances based on persistence configuration. An EntityManager is used to interact with the database via a PersistenceContext.
 Persistence context keeps track of all the changes made into managed entities.
@@ -321,7 +394,7 @@ There are two types of persistence contexts:
 - Transaction-scoped persistence context (default): When a transaction completes all changes are flushed into persistent storage.
 - Extended-scoped persistence context: An extended persistence context can span across multiple transactions. We can persist the entity without the transaction but cannot flush it without a transaction.
 
-#### Exercise 11
+#### Exercise 13
 Create a test class in a new package com.awbd.lab2.domain.
 ```java
 @DataJpaTest
@@ -335,13 +408,13 @@ public class EntityManagerTest {
     public void findProduct() {
         System.out.println(entityManager.getEntityManagerFactory());
         Product productFound = entityManager.find(Product.class, 1L);
-        assertEquals(productFound.getCode(), "PCEZ");
+        assertEquals("PCEZ", productFound.getCode());
     }
 }
 ```
 
-#### Exercise 12
-Create a package com.awbd.lab2.services and two classes PersistenceContetExtended and PersistenceContextTransaction.
+#### Exercise 14
+Create a package com.awbd.lab2.services and two classes PersistenceContentExtended and PersistenceContextTransaction.
 
 ```java
 @Service
@@ -396,12 +469,11 @@ public class PersistenceContextTransaction {
 }
 ```
 
-#### Exercise 13
+#### Exercise 15
 
 Add tests:
 
 ```java
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes=com.awbd.lab2.Lab2Application.class )
 @ActiveProfiles("h2")
 public class PersistenceContextTest {
@@ -410,43 +482,44 @@ public class PersistenceContextTest {
     PersistenceContextExtended persistenceContextExtended;
 
     @Autowired
-    PersistenceContextTransaction persistenceContextTransction;
-    
-    @Test(expected = TransactionRequiredException.class)
-    public void persistenceContextTransctionThrowException() {
-        persistenceContextTransction.update(1L, "William");
-    }
-    
+    PersistenceContextTransaction persistenceContextTransaction;
+
     @Test
-    public void persistenceContextTransctionExtended() {
-        persistenceContextTransction.updateInTransaction(1L, "William");
+    public void persistenceContextTransactionThrowException() {
+        assertThrows(TransactionRequiredException.class,
+                () -> persistenceContextTransaction.update(1L, "William"));
+    }
+
+    @Test
+    public void persistenceContextTransactionInTransaction() {
+        persistenceContextTransaction.updateInTransaction(1L, "William");
         Participant participantExtended = persistenceContextExtended.find(1L);
         System.out.println(participantExtended.getFirstName());
-        assertEquals(participantExtended.getFirstName(), "William");
+        assertEquals("William", participantExtended.getFirstName());
     }
 
 
     @Test
-    public void persistenceContextExtendedExtended() {
+    public void persistenceContextExtendedNoTransaction() {
         persistenceContextExtended.update(1L, "Snow");
         Participant participantExtended = persistenceContextExtended.find(1L);
         System.out.println(participantExtended.getFirstName());
-        assertEquals(participantExtended.getFirstName(), "Snow");
+        assertEquals("Snow", participantExtended.getFirstName());
     }
 
     @Test
-    public void persistenceContextExtendedTransaction() {
+    public void persistenceContextExtendedInTransaction() {
         persistenceContextExtended.update(1L, "Will");
-        Participant participantTransaction = persistenceContextTransction.find(1L);
+        Participant participantTransaction = persistenceContextTransaction.find(1L);
         System.out.println(participantTransaction.getFirstName());
-        assertNotEquals(participantTransaction.getFirstName(), "Will");
+        assertNotEquals("Will",participantTransaction.getFirstName());
     }
 
 }
 
 ```
 
-#### Exerise 14
+#### Exercise 16
 
 Add actuator dependency in pom.xml and check the beans that are created in the application.
 
@@ -459,7 +532,8 @@ Add actuator dependency in pom.xml and check the beans that are created in the a
 
 
 ### References
-https://www.baeldung.com/jpa-hibernate-persistence-context
-https://www.baeldung.com/spring-data-rest-relationships
+[1] https://www.baeldung.com/jpa-hibernate-persistence-context
+
+[2] https://www.baeldung.com/spring-data-rest-relationships
 
 
