@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-api
+spec:
+  selector:
+    app: image-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
