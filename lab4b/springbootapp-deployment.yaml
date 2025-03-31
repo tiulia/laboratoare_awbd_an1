@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: image-api
+  template:
+    metadata:
+      labels:
+        app: image-api
+    spec:
+      containers:
+        - name: image-api
+          image: awbd2021/lab3b
+          imagePullPolicy: Always   #IfNotPresent   Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: REDIS_HOST
+              value: "envoy"
+            - name: REDIS_PORT
+              value: "5000"
