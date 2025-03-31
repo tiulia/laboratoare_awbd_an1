@@ -12,6 +12,7 @@ public class Info {
     private Long id;
     private byte[] photo;
     private String description;
+
     @OneToOne
     private Product product;
 

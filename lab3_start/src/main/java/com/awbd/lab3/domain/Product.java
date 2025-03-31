@@ -26,6 +26,7 @@ public class Product {
     @ManyToMany(mappedBy = "products")
     private List<Category> categories;
 
+    @Enumerated(value = EnumType.STRING)
     private Currency currency;
 
 }

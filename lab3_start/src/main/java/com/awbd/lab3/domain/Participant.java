@@ -15,6 +15,7 @@ public class Participant {
     private String lastName;
     private String firstName;
     private java.util.Date birthDate;
+
     @OneToMany(mappedBy = "seller")
     private List<Product> products;
 }

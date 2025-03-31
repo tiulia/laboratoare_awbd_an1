@@ -1,64 +1,20 @@
-
 # Project 3
 
 This project contains examples of using JPA (Java Persistence API):
 
-- working with enumerations. 
 - cascading types.
 - creating repositories.
+- adding mappers.
+- adding services.
 - working with Docker images and containers.
 
 
 ### Project configuration
-This project was generated with Spring Initializr. Details about the sources in domain are found in project2. 
+This project was generated with Spring Initializr. Details about the sources in domain are to be found in project2. 
 https://start.spring.io/.
 
 
 ![External Image](https://bafybeigkeme7uhrm2fenjx5kyrfcqz3525g3dpxrnn2piuq2bjku2zk4fu.ipfs.w3s.link/erd_jpa.png)
-
-### Enumerations
-
-To allow more flexibility and more readability,
-string enums can replace number enums. We can also enrich the enum class
-with a descriptor attribute. 
-String-based enums are more resilient to changes in the set of enum values over time. 
-If new enum values are added or existing ones are modified, string-based enums do not require changes to the underlying database schema. 
-In contrast, integer-based enums may require schema modifications if enum values are added or renumbered, leading to potential data migration issues.
-
-#### Exercise 1
-Change the definition of enum _Currency_.
-
-
-```java
-public enum Currency {
-    USD("USD $"), EUR("EUR"), GBP("GBP");
-
-    private String description;
-
-    public String getDescription() {
-        return description;
-    }
-
-    Currency(String description) {
-        this.description = description;
-    }
-}
-```
-
-#### Exercise 2
-Add @Enumerated annotation for attributes of type Currency. 
-Alter the type of column .
-
-```java
-@Enumerated(value = EnumType.STRING)
-private Currency currency;
-```
-
-
-```sql
-alter table product modify column currency VARCHAR(5);
-alter table product modify column currency ENUM('USD', 'EUR', 'GBP');
-```
 
 ### Repositories
 A repository is a high-level interface that provides a set of methods for performing common CRUD operations.
@@ -73,7 +29,7 @@ the generic interface org.springframework.data.repository.Repository.
 
 
 
-#### Exercise 3
+#### Exercise 1
 Add a new package: src.main.java.awbd.lab3.repositories.
 Add CrudRepository/PagingAndSortingRepository implementation for all entities: 
 ParticipantRepository, ProductRepository, CategoryRepository.
@@ -118,9 +74,8 @@ Cascade types specify how state changes are propagated from Parent entity to Chi
 
 **JPA cascade types**:
 - **ALL:** propagates all operations from a parent to a child entity.
-  PERSIST propagates persist operation.
 
-- **PERSIST:** option is used only for new entities (TRANSIENT entities) for which there is no associated record in the database.
+- **PERSIST:** propagates persist operation. This option is used only for new entities (TRANSIENT entities) for which there is no associated record in the database.
   SQL insert statements are propagated to child entities.
 
 - **MERGE:** propagates merge operation.
@@ -135,13 +90,13 @@ Cascade types specify how state changes are propagated from Parent entity to Chi
 - **DETACH:** if parent entity is removed from the context, child entity is also removed from the context.
 
 
-#### Exercise 4
+#### Exercise 2
 Add a test to check cascade type PERSIST. The test will pass only if we set CascadeType for the relationship product-info.
 
 ```java 	
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("mysql")
+@ActiveProfiles("h2")
 public class CascadeTypesTest {
 
   @Autowired
@@ -160,6 +115,7 @@ public class CascadeTypesTest {
     productRepository.save(product);
 
     Optional<Product> productOpt = productRepository.findByName("The Vase of Tulips");
+    assertTrue(productOpt.isPresent());
     product = productOpt.get();
     assertEquals(Currency.USD, product.getCurrency());
     assertEquals("Painting by Paul Cezanne", product.getInfo().getDescription());
@@ -174,13 +130,13 @@ public class CascadeTypesTest {
 private Info info;
 ```
 
-#### Exercise 5
+#### Exercise 3
 Add a test class for ProductRepository. The test will use save and find methods.
 
 ```java 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("mysql")
+@ActiveProfiles("h2")
 public class CascadeTypesTest {
     //...
 
@@ -194,6 +150,7 @@ public class CascadeTypesTest {
         productRepository.save(product);
 
         productOpt = productRepository.findById(1L);
+        assertTrue(productOpt.isPresent());
         product = productOpt.get();
         assertEquals(Currency.USD, product.getCurrency());
         assertEquals("Painting by Paul Cezanne", product.getInfo().getDescription());
@@ -202,7 +159,7 @@ public class CascadeTypesTest {
 }
 ```
 
-#### Exercise 6
+#### Exercise 4
 Add a test that will update the currency for all products 
 linked to a certain seller.
 
@@ -224,8 +181,8 @@ Optional<Product> productOpt = productRepository.findById(2L);
 
     Optional<Participant> participantOpt = participantRepository.findById(2L);
     participant = participantOpt.get();
-    participant.getProducts().forEach(prod -> {
-        assertEquals(Currency.GBP, prod.getCurrency());});
+    participant.getProducts().forEach(prod -> 
+        assertEquals(Currency.GBP, prod.getCurrency()));
 
 }
 ```
@@ -238,9 +195,12 @@ participant-product.
 private List<Product> products;
 ```
 
-#### Exercise 7
+#### Exercise 5
 Add orphanRemoval attribute to the annotation OneToMany for the relationship participant-product.
-If OrphanRemoval attribute is set to true, a remove entity state transition is triggered for the child entity, when it is no longer referenced by its parent entity.
+If OrphanRemoval attribute is set to true, 
+a remove entity state transition 
+is triggered for the child entity, 
+when it is no longer referenced by its parent entity.
 
 ```java 
 @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -258,12 +218,10 @@ public void deleteParticipant(){
     //without orphan removal
     //assertFalse(product.isEmpty());
 
-    //wiht orphan removal true
+    //with orphan removal true
     assertTrue(product.isEmpty());
 }
 ```
-
-
 
 
 ### Finder methods 
@@ -278,20 +236,20 @@ And, Or, Like, IsNot, OrderBy, GreaterThan, IsNull, StartingWith etc.
 Examples:
 - findByName(String name) - - WHERE name = name.
 - findByNameAndDescription(String name, String desc) - - WHERE name = name or description = desc
-- findByNameLike(String name) - - WHERE name LIKE ‘name%'.
+- findByNameLike(String name) - - WHERE name LIKE 'name%'.
 - findByValueGraterThan(Double val) - - WHERE values > val
 - findByNameOrderByNameDesc(String name) - - ORDER BY name DESC
 
 SpringData JPA will automatically generate implementations for these methods.
 
-#### Exercise 8
+#### Exercise 6
 Add finder methods in ParticipantRepository class:
 ```java
 List<Participant> findByLastNameLike(String lastName);
 List<Participant> findByIdIn(List<Long> ids);
 ```
 
-#### Exercise 9
+#### Exercise 7
 Add a test class ParticipantRepositoryTest.
 
 ```java
@@ -318,7 +276,7 @@ public class ParticipantRepositoryTest {
 }
 ```
 
-#### Exercise 10
+#### Exercise 8
 Add a test for findByIdIn method.
 ```java
 @Test public void findByIds() {
@@ -352,15 +310,15 @@ List<Product> findBySellerName(String sellerFirstName, String sellerLastName);
 List<Product> findBySellerName(@Param("firstName") String sellerFirstName, @Param("lastName") String sellerLastName);
 ```
 
-#### Exercise 11
+#### Exercise 9
 Add a method findBySeller in ProductRepository class.
 ```java
 @Query("select p from Product p where p.seller.id = ?1")
 List<Product> findBySeller(Long sellerId);
 ```
 
-#### Exercise 12
-Add method findBySellerName wiht Named Parameters in ProductRepository 
+#### Exercise 10
+Add method findBySellerName with Named Parameters in ProductRepository 
 and create a test method in class ProductRepositoryTest.
 
 ```java
@@ -373,11 +331,12 @@ List<Product> findBySellerName(@Param("firstName") String sellerFirstName, @Para
 @ActiveProfiles("h2")
 @Slf4j
 public class ProductRepositoryTest {
-ProductRepository productRepository;
-@Autowired
-ProductRepositoryTest(ProductRepository productRepository){
-this.productRepository = productRepository;
-}
+    
+    ProductRepository productRepository;
+    @Autowired
+    ProductRepositoryTest(ProductRepository productRepository){
+        this.productRepository = productRepository;
+    }
 
     @Test
     public void findProducts() {
@@ -391,10 +350,343 @@ this.productRepository = productRepository;
     public void findProductsBySellerName() {
         List<Product> products = productRepository.findBySellerName("Will","Snow");
         assertTrue(products.size() >= 1);
-        log.info("findBySeller ...");
+        log.info("findBySeller BySellerName ...");
         products.forEach(product -> log.info(product.getName()));
     }
 
+}
+```
+
+### Mappers
+#### DTOs - Data Transfer Objects
+Data Transfer Objects are POJOs used to encapsulate
+and transfer data between different layers of an application:
+- between the presentation layer (UI) and the business logic layer.
+- between the business logic layer and the data access layer.
+
+Advantages of using DTOs are:
+- serialization: easily converted into json, xml or other formats.
+- reduce unnecessary data-transfer: include only relevant information.
+- reduce dependencies, different parts of the application are decoupled.
+
+We can define mappers, or we can use libraries such as _MapStruct_ or _ModelMapper_.
+
+**ModelMapper** automatically maps fields with the same names and data types.
+ModelMapper supports complex mapping scenarios without the need for explicit mapping interfaces.
+
+**MapStruct** requires explicit mapping interfaces to be defined by the developers.
+
+
+ModelMapper relies on reflection while MapStruct uses compile-time code generation.
+Hence, MapStruct has a better performance, being slight faster.
+
+#### Exercise 11
+Add packages dto and mappers.
+Add DTOs and mappers for Category.
+
+```java
+@Setter
+@Getter
+@AllArgsConstructor
+public class CategoryDTO {
+
+    private Long id;
+    private String name;
+
+}
+```
+
+```java
+@Component
+public class CategoryMapper {
+  public CategoryDTO toDto(Category category) {
+    Long id = category.getId();
+    String name= category.getName();
+    return new CategoryDTO(id, name);
+  }
+
+  public Category toCategory(CategoryDTO categoryDTO) {
+    Category category = new Category();
+    category.setId(categoryDTO.getId());
+    category.setName(categoryDTO.getName());
+    return category;
+  }
+}
+```
+
+
+#### Exercise 12
+Check the dependency for model-mapper 
+create a bean of type ModelMapper in 
+com.awbd.lab3.config
+
+```xml
+<dependency>
+  <groupId>org.modelmapper</groupId>
+  <artifactId>modelmapper</artifactId>
+  <version>3.2.1</version>
+</dependency>
+```
+
+```java
+@Configuration
+public class ModelMapperConfig {
+
+  @Bean
+  public ModelMapper modelMapper() {
+    return new ModelMapper();
+  }
+}
+```
+
+#### Exercise 13
+Add DTO class for Product. We will map Product to ProductDTO with ModelMapper, hence we
+don't need to write a specific mapper interface.
+
+```java
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductDTO {
+
+  private Long id;
+  private String name;
+  private String code;
+  private Double reservePrice;
+  private Boolean restored;
+  private Info info;
+  private Participant seller;
+  private List<Category> categories;
+  private Currency currency;
+
+}
+```
+
+#### Exercise 14
+Include in maven configuration MapStruct dependency.
+Annotation processors are tools that process 
+annotations in Java source code.
+MapStruct and Lombok use annotation processors 
+to generate code during the compilation phase.
+We must MapStruct to generate mappers during the compilation process based on the annotations.
+
+```
+<dependency>
+    <groupId>org.mapstruct</groupId>
+    <artifactId>mapstruct</artifactId>
+    <version>1.6.3</version>
+</dependency> 
+```
+
+```
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <version>3.11.0</version>
+  <configuration>
+	<annotationProcessorPaths>
+			<path>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+		  <version>1.6.0.Beta1</version>
+		</path>
+		<path>
+		  <groupId>org.projectlombok</groupId>
+          <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+      </path>
+    </annotationProcessorPaths>
+  </configuration>
+</plugin>
+```
+
+#### Exercise 15
+Add a DTO and mapper for Participant.
+
+```java
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class ParticipantDTO {
+
+    private Long id;
+    private String lastName;
+    private String firstName;
+    private java.util.Date birthDate;
+
+    private List<Product> products;
+
+}
+```
+
+A bean implementing ParticipantMapper will be automatically created.
+
+```java
+@Mapper(componentModel = "spring")
+public interface ParticipantMapper {
+    ParticipantDTO toDto (Participant participant);
+    Participant toParticipant (ParticipantDTO participantDTO);
+}
+```
+
+### Stereotype annotations
+
+Stereotype annotations are used for classifications:
+
+- **@Service**: Represents a component implementing the business logic, typically used in the service layer.
+
+- **@Repository**: Represents a component in the persistence layer, used for database repository operations.
+
+#### Exercise 16
+Add a new package com.awbd.lab3.services and a new interface com.awbd.lab3.services._ProductsService_:
+Implement com.awbd.lab3.services.ProductsService using a bean of type _ProductRepository_.
+
+```java
+public interface ProductService {
+  List<ProductDTO> findAll();
+  ProductDTO findById(Long l);
+  ProductDTO save(ProductDTO product);
+  void deleteById(Long id);
+
+}
+```
+
+```java
+@Service
+public class ProductServiceImpl implements ProductService {
+  ProductRepository productRepository;
+
+  ModelMapper modelMapper;
+
+  public ProductServiceImpl(ProductRepository productRepository, ModelMapper modelMapper) {
+    this.productRepository = productRepository;
+    this.modelMapper = modelMapper;
+  }
+
+  @Override
+  public List<ProductDTO> findAll(){
+    List<Product> products = new LinkedList<>();
+    productRepository.findAll(Sort.by("name")
+    ).iterator().forEachRemaining(products::add);
+
+    return products.stream()
+            .map(product -> modelMapper.map(product, ProductDTO.class))
+            .collect(Collectors.toList());
+  }
+
+  @Override
+  public ProductDTO findById(Long l) {
+    Optional<Product> productOptional = productRepository.findById(l);
+    if (!productOptional.isPresent()) {
+      throw new RuntimeException("Product not found!");
+    }
+    return modelMapper.map(productOptional.get(), ProductDTO.class);
+  }
+
+  @Override
+  public ProductDTO save(ProductDTO product) {
+    
+    Product savedProduct = productRepository.save(modelMapper.map(product, Product.class));
+    return modelMapper.map(savedProduct, ProductDTO.class);
+  }
+
+  @Override
+  public void deleteById(Long id) {
+    productRepository.deleteById(id);
+  }
+}
+```
+
+#### Exercise 17
+Add the interface and the implementation for CategoryService.
+
+```java
+@Service
+public interface CategoryService {
+    List<CategoryDTO> findAll();
+    CategoryDTO findById(Long l);
+    CategoryDTO save(CategoryDTO category);
+    void deleteById(Long id);
+
+}
+```
+
+```java
+@Service
+public class CategoryServiceImpl implements CategoryService{
+
+  private CategoryRepository categoryRepository;
+  private CategoryMapper categoryMapper;
+
+  CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper){
+    this.categoryRepository = categoryRepository;
+    this.categoryMapper = categoryMapper;
+  }
+
+  @Override
+  public List<CategoryDTO> findAll(){
+    List<Category> categories = new LinkedList<>();
+    categoryRepository.findAll().iterator().forEachRemaining(categories::add);
+
+    return categories.stream()
+            .map(categoryMapper::toDto)
+            .collect(Collectors.toList());
+  }
+
+  @Override
+  public CategoryDTO findById(Long l) {
+    Optional<Category> categoryOptional = categoryRepository.findById(l);
+    if (!categoryOptional.isPresent()) {
+      throw new RuntimeException("Category not found!");
+    }
+
+    return categoryMapper.toDto(categoryOptional.get());
+  }
+
+  @Override
+  public CategoryDTO save(CategoryDTO categoryDto) {
+    Category savedCategory = categoryRepository.save(categoryMapper.toCategory(categoryDto));
+    return categoryMapper.toDto(savedCategory);
+  }
+
+  @Override
+  public void deleteById(Long id) {
+    categoryRepository.deleteById(id);
+  }
+
+
+}
+
+```
+
+#### Exercise 18
+Add a test for CategoryService
+
+```java
+@ExtendWith(MockitoExtension.class)
+public class CategoryServiceTest {
+
+  @Mock
+  CategoryMapper categoryMapper;
+  @Mock
+  CategoryRepository categoryRepository;
+
+  @InjectMocks
+  CategoryServiceImpl categoryService;
+
+  @Test
+  public void findProducts() {
+    List<Category> categoryList = new ArrayList<>();
+    Category category = new Category();
+    categoryList.add(category);
+
+    when(categoryRepository.findAll()).thenReturn(categoryList);
+    List<CategoryDTO> categoriesDto = categoryService.findAll();
+    assertEquals(1, categoriesDto.size());
+    verify(categoryRepository, times(1)).findAll();
+  }
 }
 ```
 
@@ -412,7 +704,7 @@ Docker is a toolkit for container management.
 
 **Docker components**:
 
-•	Server or daemon process, dockerd command.
+•	Server or daemon process, docker command.
 •	REST API interfaces to daemon.
 •	Command line interface, CLI client  docker command.
 
@@ -424,13 +716,13 @@ Docker is a toolkit for container management.
 
 •	**Networks**, **Volumes** etc.
 
-#### Exercise 13
+#### Exercise 11
 Add and run a maven configuration.
 ```
 clean install -Dmaven.test.skip=true
 ```
 
-#### Exercise 14
+#### Exercise 12
 Create a docker file to build a docker image 
 for the runnable jar build in the previous step.
 We use openjdk image as base image.
@@ -444,7 +736,7 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 ```
 
 
-#### Exercise 15
+#### Exercise 13
 Build the image based on the docker file.
 Run a docker configuration in the IDE or
 Run in the directory containing the docker file
@@ -458,7 +750,7 @@ To check available images run:
 docker images
 ```
 
-#### Exerise 16
+#### Exercise 14
 Run a container based on the docker image lab3
 
 ```
@@ -475,7 +767,7 @@ To remove the container run
 docker rm lab3_h2
 ```
 
-#### Exerise 17
+#### Exercise 15
 Run a docker image for mysql. Run the container in a network boot-mysql.
 
 ```
@@ -484,7 +776,7 @@ docker network create boot-mysql
 docker run --name mysql_awbd --network boot-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=awbd -e MYSQL_PASSWORD=awbd -e MYSQL_USER=awbd mysql
 ```
 
-#### Exerise 18
+#### Exercise 16
 Create a new file application-sqldocker.properties. 
 This file will be used for the configuration of the data-source 
 when the application will run with profile sqldocker.
@@ -500,7 +792,7 @@ spring.sql.init.mode = never
 spring.sql.init.platform=mysql
 ```
 
-#### Exerise 19
+#### Exercise 17
 Run the maven configuration clean-install.
 Run a container based on the docker image lab3 with the profile sqldocker.
 
@@ -508,7 +800,7 @@ Run a container based on the docker image lab3 with the profile sqldocker.
 docker run -e "SPRING_PROFILES_ACTIVE=sqldocker" --name lab3_sqldocker --network boot-mysql -p 8080:8080 lab3
 ```
 
-#### Exerise 20
+#### Exercise 18
 Connect to docker container boot-mysql. First find the container, then use bash to connect to mysql. 
 
 ```
