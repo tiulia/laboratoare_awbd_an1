@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>AWBD Auction</title>
 
-    <script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
-    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/webjars/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/webjars/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body>
 <div class="container">
@@ -20,13 +20,13 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto topnav">
                 <li class="nav-item">
-                    <a class="nav-link " th:href="@{'/product'}">Products</a>
+                    <a class="nav-link " th:href="@{'/products'}">Products</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{'/categories'}">Categories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link btn-primary" th:href="@{'/product/form'}">
+                    <a class="nav-link btn-primary" th:href="@{'/products/form'}">
                         <i class="fas fa-plus-circle"></i> Sell
                     </a>
                 </li>
@@ -46,7 +46,7 @@
         </div>
     </nav>
 </div>
-<form enctype="multipart/form-data" method="post" th:action="@{/product}" th:object="${product}">
+<form enctype="multipart/form-data" method="post" th:action="@{/products}" th:object="${product}">
     <input th:field="*{id}" type="hidden"/>
     <input th:field="*{info.id}" type="hidden"/>
     <input th:field="*{seller.id}" type="hidden"/>
@@ -120,7 +120,7 @@
                         <br>
 
 
-                        <img id="pic" th:src="@{'/product/getimage/' + *{id}}" width="200" height="200" />
+                        <img id="pic" th:src="@{'/products/getimage/' + *{id}}" width="200" height="200" />
                     </div>
                 </div>
                 <div class="row">

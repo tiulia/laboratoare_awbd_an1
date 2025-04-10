@@ -1,34 +1,31 @@
-package com.awbd.lab4.domain;
+package com.awbd.lab4.dtos;
 
-import jakarta.persistence.*;
+
+import com.awbd.lab4.domain.Category;
+import com.awbd.lab4.domain.Currency;
+import com.awbd.lab4.domain.Info;
+import com.awbd.lab4.domain.Participant;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Setter
 @Getter
-@Entity
-public class Product {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String code;
     private Double reservePrice;
     private Boolean restored;
-
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
     private Info info;
-
-    @ManyToOne
     private Participant seller;
-
-    @ManyToMany(mappedBy = "products")
     private List<Category> categories;
-
-    @Enumerated(value = EnumType.STRING)
     private Currency currency;
 
 }

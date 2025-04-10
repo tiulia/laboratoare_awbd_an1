@@ -8,7 +8,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @DataJpaTest
 @ActiveProfiles("h2")
@@ -32,7 +34,7 @@ public class ProductRepositoryTest {
     public void findProductsBySellerName() {
         List<Product> products = productRepository.findBySellerName("Will","Snow");
         assertTrue(products.size() >= 1);
-        log.info("findBySeller ...");
+        log.info("findBySeller BySellerName ...");
         products.forEach(product -> log.info(product.getName()));
     }
 

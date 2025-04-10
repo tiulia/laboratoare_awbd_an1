@@ -1,17 +1,14 @@
 package com.awbd.lab4.domain;
 
-public enum Currency {
+import lombok.Getter;
 
+@Getter
+public enum Currency {
     USD("USD $"), EUR("EUR"), GBP("GBP");
 
-    private String description;
-
-    public String getDescription() {
-        return description;
-    }
+    private final String description;
 
     Currency(String description) {
         this.description = description;
     }
 }
-

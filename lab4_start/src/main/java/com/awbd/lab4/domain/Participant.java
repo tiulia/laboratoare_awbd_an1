@@ -15,7 +15,7 @@ public class Participant {
     private String lastName;
     private String firstName;
     private java.util.Date birthDate;
+
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
-
 }

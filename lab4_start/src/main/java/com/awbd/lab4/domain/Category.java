@@ -1,10 +1,11 @@
 package com.awbd.lab4.domain;
 
 import jakarta.persistence.*;
-
 import lombok.Data;
 
 import java.util.List;
+
+
 
 @Data
 @Entity
@@ -15,7 +16,10 @@ public class Category {
     private Long id;
     private String name;
 
-    @ManyToMany(mappedBy = "categories")
+    @ManyToMany
+    @JoinTable(name = "product_category",
+            joinColumns =@JoinColumn(name="category_id",referencedColumnName = "id"),
+            inverseJoinColumns =@JoinColumn(name="product_id",referencedColumnName="id"))
     private List<Product> products;
 
 }
