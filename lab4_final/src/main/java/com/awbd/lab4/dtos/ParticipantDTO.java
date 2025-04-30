@@ -1,12 +1,11 @@
 package com.awbd.lab4.dtos;
 
-import com.awbd.lab4.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+
 
 @Setter
 @Getter
@@ -19,6 +18,5 @@ public class ParticipantDTO {
     private String firstName;
     private java.util.Date birthDate;
 
-    private List<Product> products;
 
 }

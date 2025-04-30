@@ -1,6 +1,5 @@
 package com.awbd.lab4.controllers;
 
-import com.awbd.lab4.domain.Product;
 import com.awbd.lab4.dtos.CategoryDTO;
 import com.awbd.lab4.dtos.ProductDTO;
 import com.awbd.lab4.services.CategoryService;
@@ -18,27 +17,38 @@ import java.io.InputStream;
 import java.util.List;
 
 @Controller
-@RequestMapping("/product")
+@RequestMapping("/products")
 public class ProductController {
     ProductService productService;
-
     CategoryService categoryService;
-    public ProductController(ProductService productService,  CategoryService categoryService) {
+
+    public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
         this.categoryService = categoryService;
     }
 
+    @RequestMapping("/form")
+    public String productForm(Model model) {
+        ProductDTO product = new ProductDTO();
+        //product.setSeller(null);
+        model.addAttribute("product",  product);
+        List<CategoryDTO> categoriesAll = categoryService.findAll();
+        model.addAttribute("categoriesAll", categoriesAll );
+        return "productForm";
+    }
+
+
     @RequestMapping("")
     public String productList(Model model) {
         List<ProductDTO> products = productService.findAll();
-        model.addAttribute("products",products);
+        model.addAttribute("products", products);
         return "productList";
     }
 
     @RequestMapping("/edit/{id}")
     public String edit(@PathVariable String id, Model model) {
-        model.addAttribute("product",
-                productService.findById(Long.valueOf(id)));
+        ProductDTO productDTO = productService.findById(Long.valueOf(id));
+        model.addAttribute("product", productDTO);
 
         List<CategoryDTO> categoriesAll = categoryService.findAll();
         model.addAttribute("categoriesAll", categoriesAll );
@@ -47,35 +57,24 @@ public class ProductController {
     }
 
 
+    @RequestMapping("/delete/{id}")
+    public String deleteById(@PathVariable String id){
+        productService.deleteById(Long.valueOf(id));
+        return "redirect:/products";
+    }
+
     @PostMapping("")
     public String saveOrUpdate(@ModelAttribute ProductDTO product,
-                               @RequestParam("imagefile") MultipartFile file
-    ){
+                               @RequestParam("imagefile") MultipartFile file){
         if (file.isEmpty())
             productService.save(product);
         else
             productService.savePhotoFile(product, file);
 
 
-        return "redirect:/product" ;
+        return "redirect:/products" ;
     }
 
-    @RequestMapping("/delete/{id}")
-    public String deleteById(@PathVariable String id){
-        productService.deleteById(Long.valueOf(id));
-        return "redirect:/product";
-    }
-
-
-    @RequestMapping("/form")
-    public String productForm(Model model) {
-        Product product = new Product();
-        product.setSeller(null);
-        model.addAttribute("product",  product);
-        List<CategoryDTO> categoriesAll = categoryService.findAll();
-        model.addAttribute("categoriesAll", categoriesAll );
-        return "productForm";
-    }
 
     @GetMapping("/getimage/{id}")
     public void downloadImage(@PathVariable String id, HttpServletResponse response) throws IOException {

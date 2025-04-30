@@ -354,6 +354,312 @@ public class CategoryController {
 }
 ```
 
+### Tests
+#### Argument captor
+
+ArgumentCaptor is used to capture an argument which is passed
+in the invocation of a method.
+The constructor takes as argument
+the type of the argument to be "captured".
+
+Instead of using the ArgumentCaptor(type) constructor,
+we can inject an ArgumentCaptor object with annotation @Captor
+
+After invoking the method, captor.getValue() returns the value of the argument.
+
+#### MockMVC
+MockMvc object encapsulates web application beans
+and allows testing web requests.
+Available options are:
+
+- Specifying headers for the request.
+- Specifying request body.
+- Validate the response:
+    - check HTTP - status code,
+    - check response headers,
+    - check response body.
+
+When running an integration test different layers of
+applications are involved. @AutoConfigureMockMvc
+annotation instructs Spring to create a MockMvc object,
+associated with the application context,
+prepared to send requests to TestDispatcherServlet
+which is an extension of DispatcherServlet.  
+Requests are sent by calling the perform method.
+If @AutoConfigureMockMvc annotation is used,
+MockMvc object can be injected with @Autowired annotation.
+
+**@SpringBootTest** bootstraps the entire
+Spring container.
+Values for webEnvironment property of @SpringBootTest
+annotation are:
+- **RANDOM_PORT**: EmbeddedWebApplicationContext, real servlet environment.
+  Embedded servlet containers are started and listening on a random port.
+
+- **DEFINED_PORT**: EmbeddedWebApplicationContext, real servlet environment. 			Embedded servlet containers are started and listening on a defined port (i.e from  			application.properties or on the default port 8080).
+
+- **NONE**: loads ApplicationContext using SpringApplication,
+  does not provide any servlet environment.
+
+#### Extensions
+**Junit 5 extensions** extends the behavior
+of test class or methods.
+Extensions are related to a certain event
+in the execution of a test (extension point).
+For each extension point we implement an interface.
+@ExtendWith annotation registers test extensions.
+
+**MockitoExtension.class** finds member
+variables annotated with **@Mock** and creates
+a mock implementation of those variables.
+Mocks are injected into member variables
+annotated with the **@InjectMocks** annotation,
+using either construction injection or setter injection.
+
+**@MockitoBean** adds mock objects to Spring application
+context. The mock will replace any existing bean of
+the same type in the application context.
+
+#### Exercise 8
+
+Add a new test class _ProductServiceControllerTest_.
+
+```java
+@ExtendWith(MockitoExtension.class)
+public class ProductServiceControllerTest {
+
+  @Mock
+  Model model;
+  
+  @Mock
+  ProductService productService;
+  
+  @InjectMocks
+  ProductController productController;
+
+  @Mock
+  CategoryService categoryService;
+}
+```
+
+#### Exercise 9
+Add a new test _showById_.
+
+```java
+@Test
+public void showById() {
+  Long id = 1L;
+  Product productTest;
+
+  productTest = new Product();
+  productTest.setId(id);
+
+  ProductDTO productTestDTO = new ProductDTO();
+  productTestDTO.setId(id);
+
+  when(productService.findById(id)).thenReturn(productTestDTO);
+
+  String viewName = productController.edit(id.toString(), model);
+  assertEquals("productForm", viewName);
+  verify(productService, times(1)).findById(id);
+
+  ArgumentCaptor<ProductDTO> argumentCaptor = ArgumentCaptor.forClass(ProductDTO.class);
+  verify(model, times(1))
+          .addAttribute(eq("product"), argumentCaptor.capture() );
+
+  ProductDTO productArg = argumentCaptor.getValue();
+  assertEquals(productArg.getId(), productTestDTO.getId() );
+
+}
+```
+
+#### Exercise 10
+Add Mocks for productService and 
+for Model in a test class
+ProductServiceControllerTest
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+@Profile("mysql")
+public class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    ProductService productService;
+
+    @MockitoBean
+    CategoryService categoryService;
+
+    @MockitoBean
+    Model model;
+}
+```
+
+#### Exercise 11
+Set the behaviour of th productService in _showByIdMvc()_ test.
+
+```java
+    @Test
+public void showByIdMvc() throws Exception {
+  Long id = 1l;
+
+  ProductDTO productTestDTO = new ProductDTO();
+  productTestDTO.setId(id);
+  productTestDTO.setName("test");
+
+  when(productService.findById(id)).thenReturn(productTestDTO);
+
+  mockMvc.perform(get("/products/edit/{id}", "1"))
+          .andExpect(status().isOk())
+          .andExpect(view().name("productForm"))
+          .andExpect(model().attribute("product", productTestDTO));
+
+}
+```
+
+#### Exercise 12
+Add a test for POST request.
+
+```java
+    @Test
+public void testSaveOrUpdate_WithValidProductAndNoFile_ShouldSaveProduct() throws Exception {
+    ProductDTO product = new ProductDTO();
+    product.setName("Test Product");
+
+    mockMvc.perform(MockMvcRequestBuilders.multipart("/products").file("imagefile", new byte[0])
+                  .param("name", "Test Product")
+                  .contentType(MediaType.MULTIPART_FORM_DATA)
+                  .accept(MediaType.TEXT_HTML))
+          .andExpect(status().is3xxRedirection())
+          .andExpect(redirectedUrl("/products"));
+
+    ArgumentCaptor<ProductDTO> argumentCaptor = ArgumentCaptor.forClass(ProductDTO.class);
+    verify(productService, times(1))
+          .save(argumentCaptor.capture() );
+
+    ProductDTO productArg = argumentCaptor.getValue();
+    assertEquals(productArg.getName(), product.getName() );
+}
+```
+
+### Exception handling
+#### HandlerExceptionResolver
+
+HandlerExceptionResolver is used internally by Spring
+to intercept and process any exception raised in the MVC
+system and not handled by a Controller. The parameter handler
+refers to the controller that generated the exception.
+
+```java
+public interface HandlerExceptionResolver {
+    ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex);
+}
+```
+
+Three default implementations are created for
+HandlerExceptionResolver and processed in order
+by HandlerExceptionResolverComposite bean.
+
+![External Image](https://bafybeibmb5nwkiojpumpdtgmpkz6pkttde4jzbxqtx5qdvjqp6knpvijhm.ipfs.w3s.link/execptions.jpg)
+
+##### @ResponseStatus
+
+@ResponseStatus annotate custom exception class
+to indicate the HTTP status to be return
+when the exception is thrown.
+Examples of status codes:
+- Client Errors: 400 Bad Request.
+- 401 Unauthorized: Authentication Required.
+- 404 Not Found: Resource not found.
+- 405 Method not Allowed.
+- 403 Forbidden: Unauthorized.
+- 500 Server error: Server Unhandled exceptions.
+
+##### @ExceptionHandler
+
+@ExceptionHandler defines custom exception handling
+at Controller level:
+- define a specific status code.
+- return a specific view with details about the error.
+- interact with ModelAndView objects.
+- within an @ExceptionHandler method, we don't have direct
+  access to the Model object. We can't directly add attributes
+  to the model.
+
+##### SimpleMappingExceptionResolver
+- Maps exception class names to view names.
+- Specifies a fallback error page for exceptions not associated with a specific view.
+- Adds exception attribute to the model.
+
+#### Exercise 13
+Create a new package com.awbd.lab4.exceptions and
+a custom exception class that will be thrown if a product
+id is not found in the database.
+
+```java
+public class ResourceNotFoundException extends RuntimeException {
+  public ResourceNotFoundException() {
+  }
+
+  public ResourceNotFoundException(String message) {
+    super(message);
+  }
+
+  public ResourceNotFoundException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
+}
+```
+
+#### Exercise 14
+Throw a ResourceNotFoundException error when
+the product id is not found in the database,
+modify methods findById in ProductService.
+Test http://localhost:8080/products/edit/10
+
+```java
+@Override
+public ProductDTO findById(Long l) {
+    Optional<Product> productOptional = productRepository.findById(l);
+    if (!productOptional.isPresent()) {
+        throw new ResourceNotFoundException("product " + l + " not found");
+        //throw new RuntimeException("Product not found!");
+    }
+    return modelMapper.map(productOptional.get(), ProductDTO.class);
+}
+```
+
+#### Exercise 15
+Annotate ResourceNotFoundException with @ResponseStatus.
+
+```java
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
+}
+```
+
+#### Exercise 16
+Add a GlobalExceptionHandler
+
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ModelAndView handlerNotFoundException(Exception exception){
+    ModelAndView modelAndView = new ModelAndView();
+    modelAndView.getModel().put("exception",exception);
+    modelAndView.setViewName("notFoundException");
+    return modelAndView;
+  }
+
+}
+```
+
 
 ### Docs
 

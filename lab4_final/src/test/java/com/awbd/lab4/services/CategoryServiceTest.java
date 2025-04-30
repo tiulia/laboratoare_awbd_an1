@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.*;
 public class CategoryServiceTest {
 
     @Mock
-    CategoryMapper cattegoryMapper;
+    CategoryMapper categoryMapper;
     @Mock
     CategoryRepository categoryRepository;
 
@@ -30,13 +29,13 @@ public class CategoryServiceTest {
 
     @Test
     public void findProducts() {
-        List<Category> categoryList = new ArrayList<Category>();
+        List<Category> categoryList = new ArrayList<>();
         Category category = new Category();
         categoryList.add(category);
 
         when(categoryRepository.findAll()).thenReturn(categoryList);
-        List<CategoryDTO> categriesDto = categoryService.findAll();
-        assertEquals(categriesDto.size(), 1);
+        List<CategoryDTO> categoriesDto = categoryService.findAll();
+        assertEquals(1, categoriesDto.size());
         verify(categoryRepository, times(1)).findAll();
     }
 }

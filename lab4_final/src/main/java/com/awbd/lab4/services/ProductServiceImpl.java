@@ -3,6 +3,7 @@ package com.awbd.lab4.services;
 import com.awbd.lab4.domain.Info;
 import com.awbd.lab4.domain.Product;
 import com.awbd.lab4.dtos.ProductDTO;
+import com.awbd.lab4.exceptions.ResourceNotFoundException;
 import com.awbd.lab4.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Sort;
@@ -40,15 +41,17 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO findById(Long l) {
         Optional<Product> productOptional = productRepository.findById(l);
         if (!productOptional.isPresent()) {
-            throw new RuntimeException("Product not found!");
+            throw new ResourceNotFoundException("product " + l + " not found");
+            //throw new RuntimeException("Product not found!");
         }
         return modelMapper.map(productOptional.get(), ProductDTO.class);
     }
 
     @Override
     public ProductDTO save(ProductDTO product) {
-        ;
-        Product savedProduct = productRepository.save(modelMapper.map(product, Product.class));
+        Product productToSave =  modelMapper.map(product, Product.class);
+        productToSave.getInfo().setProduct(productToSave);
+        Product savedProduct = productRepository.save(productToSave);
         return modelMapper.map(savedProduct, ProductDTO.class);
     }
 

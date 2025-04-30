@@ -122,13 +122,13 @@ Update the script schema-mysql.sql by adding DDL commands
 for USER and AUTHORITY tables:
 
 ```
-DROP TABLE IF EXISTS USER_AUTHORITY;
-DROP TABLE IF EXISTS USER;
-DROP TABLE IF EXISTS AUTHORITY;
+DROP TABLE IF EXISTS user_authority;
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS autority;
 ```
 
 ```
-CREATE TABLE USER(
+CREATE TABLE user(
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(100) NOT NULL,
@@ -138,16 +138,16 @@ CREATE TABLE USER(
     credentials_non_expired BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE AUTHORITY(
+CREATE TABLE authority(
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     role VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE USER_AUTHORITY(
+CREATE TABLE user_authority(
     user_id BIGINT,
     authority_id BIGINT,
-    FOREIGN KEY (user_id) REFERENCES USER(id),
-    FOREIGN KEY (authority_id) REFERENCES AUTHORITY(id),
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (authority_id) REFERENCES authority(id),
     PRIMARY KEY (user_id, authority_id)
 );
 ```
@@ -320,7 +320,7 @@ public SecurityJpaConfig(JpaUserDetailsService userDetailsService) {
 ```
 
 #### Exercise 11
-Run the application and test the default login form. http://localhost:8080/product
+Run the application and test the default login form. http://localhost:8080/products
 
 ### Security Filters
 Web Security is based on Filters. 
@@ -360,7 +360,7 @@ Add authorization rules based on roles for specific endpoints.
 Add in SecurityJpaConfig:
 
 ```java
-    @Bean
+@Bean
 PasswordEncoder passwordEncoder() {
   return new BCryptPasswordEncoder();
 }
@@ -368,10 +368,10 @@ PasswordEncoder passwordEncoder() {
 @Bean
 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
   return http
-          .authorizeRequests(auth -> auth
-                  .requestMatchers("/product/form").hasRole("ADMIN")
+          .authorizeHttpRequests(auth -> auth
+                  .requestMatchers("/products/form").hasRole("ADMIN")
                   .requestMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
-                  .requestMatchers("/product/*").hasAnyRole("ADMIN", "GUEST")
+                  .requestMatchers("/products/*").hasAnyRole("ADMIN", "GUEST")
                   .requestMatchers("/categories/*").hasAnyRole("ADMIN", "GUEST")
                   .anyRequest().authenticated()
           )

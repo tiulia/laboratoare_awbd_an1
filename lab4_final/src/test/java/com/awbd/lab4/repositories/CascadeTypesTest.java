@@ -12,13 +12,13 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("mysql")
+@ActiveProfiles("h2")
 public class CascadeTypesTest {
 
     @Autowired
@@ -30,6 +30,7 @@ public class CascadeTypesTest {
     @Test
     public void updateDescription(){
         Optional<Product> productOpt = productRepository.findById(1L);
+        assertTrue(productOpt.isPresent());
         Product product = productOpt.get();
         product.getInfo().setDescription("Painting by Paul Cezanne");
         product.setCurrency(Currency.USD);
@@ -37,6 +38,7 @@ public class CascadeTypesTest {
         productRepository.save(product);
 
         productOpt = productRepository.findById(1L);
+        assertTrue(productOpt.isPresent());
         product = productOpt.get();
         assertEquals(Currency.USD, product.getCurrency());
         assertEquals("Painting by Paul Cezanne", product.getInfo().getDescription());
@@ -57,6 +59,7 @@ public class CascadeTypesTest {
         productRepository.save(product);
 
         Optional<Product> productOpt = productRepository.findByName("The Vase of Tulips");
+        assertTrue(productOpt.isPresent());
         product = productOpt.get();
         assertEquals(Currency.USD, product.getCurrency());
         assertEquals("Painting by Paul Cezanne", product.getInfo().getDescription());
@@ -67,11 +70,13 @@ public class CascadeTypesTest {
     @Test
     public void updateParticipant(){
         Optional<Product> productOpt = productRepository.findById(2L);
-
+        assertTrue(productOpt.isPresent());
         Participant participant = productOpt.get().getSeller();
         participant.setFirstName("William");
 
-        participant.getProducts().forEach(prod -> {prod.setCurrency(Currency.GBP);});
+        participant.getProducts().forEach(prod -> prod.setCurrency(Currency.GBP));
+
+
         Product product = new Product();
         product.setName("The Vase of Tulips");
         product.setCurrency(Currency.GBP);
@@ -80,9 +85,10 @@ public class CascadeTypesTest {
         participantRepository.save(participant);
 
         Optional<Participant> participantOpt = participantRepository.findById(2L);
+        assertTrue(participantOpt.isPresent());
         participant = participantOpt.get();
-        participant.getProducts().forEach(prod -> {
-            assertEquals(Currency.GBP, prod.getCurrency());});
+        participant.getProducts().forEach(prod ->
+            assertEquals(Currency.GBP, prod.getCurrency()));
 
     }
 

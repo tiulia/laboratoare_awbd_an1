@@ -1,9 +1,7 @@
 package com.awbd.lab4.controllers;
 
 import com.awbd.lab4.dtos.CategoryDTO;
-import com.awbd.lab4.dtos.ProductDTO;
 import com.awbd.lab4.services.CategoryService;
-import com.awbd.lab4.services.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;

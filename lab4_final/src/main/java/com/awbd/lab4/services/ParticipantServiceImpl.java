@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 @Service
 public class ParticipantServiceImpl implements ParticipantService{
 
-    private ParticipantRepository participantRepository;
-    private ParticipantMapper participantMapper;
+    private final ParticipantRepository participantRepository;
+    private final ParticipantMapper participantMapper;
 
     ParticipantServiceImpl(ParticipantRepository participantRepository, ParticipantMapper participantMapper){
         this.participantRepository = participantRepository;
