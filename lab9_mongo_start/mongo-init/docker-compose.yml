@@ -1,0 +1,27 @@
+services:
+  mongo_test:
+    container_name: mongo_test
+    build: ./mongo-test
+    ports:
+      - 27017:27017
+    networks:
+      - awbd
+    volumes:
+      - ./mongo/data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: awbd
+      MONGO_INITDB_ROOT_PASSWORD: awbd
+      MONGO_INITDB_DATABASE: moviesdb
+
+  mongo_seed:
+    container_name: mongo_seed
+    build: ./mongo-seed
+    networks:
+      - awbd
+    depends_on:
+      - mongo_test
+
+networks:
+  awbd:
+    name: awbd
+    driver: bridge
